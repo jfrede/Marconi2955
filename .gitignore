@@ -1,0 +1,9 @@
+# Urheberrechtlich geschuetztes Originalmaterial und abgeleitete Analysen: nie veroeffentlichen
+private/
+*.bin
+*.rom
+*.pdf
+*.gpr
+*.rep
+build/
+__pycache__/
