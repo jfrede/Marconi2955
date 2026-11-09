@@ -1,5 +1,6 @@
 # Urheberrechtlich geschuetztes Originalmaterial und abgeleitete Analysen: nie veroeffentlichen
 private/
+CLAUDE.md
 *.bin
 *.rom
 *.pdf

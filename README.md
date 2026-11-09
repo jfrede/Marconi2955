@@ -1,17 +1,21 @@
-# Marconi 2955 – offene Firmware
+# Marconi 2955 – open firmware
 
-Ziel: Funktionsgleicher, offener Nachbau der Firmware des Marconi 2955 Funkmessplatzes
-mit Bugfixes und Komfortfunktionen (Frequenz-Schnelleingabe, eigener Einschalt-Default,
-Klartext-Fehlermeldungen im Selbsttest).
+Goal: a functionally equivalent, open re-implementation of the firmware of the Marconi 2955
+radio communications test set, with bug fixes and convenience features (quick frequency entry,
+user-defined power-on default, plain-text self-test error messages).
 
-## Struktur
-- `docs/`   – Hardware- und Verhaltensspezifikation (eigene Texte, veroeffentlichbar)
-- `emu/`    – 8085-Emulator und Instrumenten-Peripherie (C)
-- `fw/`     – neue Firmware (C, plattformneutral mit Hardware-Abstraktionsschicht)
-- `tools/`  – Hilfsskripte (OCR, Plaene zusammensetzen, ...)
-- `private/` – Original-ROMs, Handbuecher, Ghidra-Projekt, Disassembly. **Nicht im Repository.**
+## Layout
+- `docs/`   – hardware and behaviour specification (own text, publishable)
+- `emu/`    – 8085 emulator and instrument peripherals (C)
+- `fw/`     – new firmware (C, platform-neutral with a hardware abstraction layer)
+- `tools/`  – helper scripts (OCR, stitching split schematics, ...)
+- `private/` – original ROMs, manuals, Ghidra project, disassembly. **Not in the repository.**
 
-## Regeln
-- Original-ROMs, deren Disassembly und die Handbuch-PDFs bleiben privat (siehe `.gitignore`).
-- Oeffentlich sind nur eigener Code und selbst formulierte Spezifikation.
-- Vor jedem Test am Geraet: Backup von EEPROM IC13 und den NOVRAMs (Kalibrierdaten!).
+## Documentation
+Start with [docs/architecture.md](docs/architecture.md). The other files in `docs/` explain how
+each function works, the registers, the stored data, GPIB, and what is still missing.
+
+## Rules
+- Original ROMs, their disassembly and the manual PDFs stay private (see `.gitignore`).
+- Only own code and self-written specification are published.
+- Before any test on the instrument: back up EEPROM IC13 and the NOVRAMs (calibration data!).

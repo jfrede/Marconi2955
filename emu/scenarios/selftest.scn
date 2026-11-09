@@ -1,0 +1,13 @@
+# Self test via HELP and the mode key arrowed by SELF TEST.
+# Results depend on instrument hardware that the emulator does not model.
+adc 2 10
+run 60000000
+# HELP
+key 2 0
+run 20000000
+screen
+# SCOPE key position, arrowed by SELF TEST
+key 1 0
+run 300000000
+screen
+settings

@@ -1,0 +1,43 @@
+# Receiver test: level limits and level shift when switching the RF socket.
+adc 2 10
+run 60000000
+screen
+# SELECT: BNC socket
+key 1 6
+run 20000000
+screen
+# RF GEN, LEVEL, -5 dBm (only valid on the BNC socket)
+key 7 1
+run 12000000
+key 6 2
+run 12000000
+key 5 4
+run 12000000
+key 4 3
+run 12000000
+key 2 5
+run 20000000
+screen
+# SELECT: N socket, the level moves by 20 dB to -25 dBm
+key 1 6
+run 20000000
+screen
+# LEVEL, -130 dBm (only valid on the N socket)
+key 6 2
+run 12000000
+key 5 4
+run 12000000
+key 0 3
+run 12000000
+key 2 3
+run 12000000
+key 1 4
+run 12000000
+key 2 5
+run 20000000
+screen
+# SELECT: BNC socket, the level moves by 20 dB to -110 dBm
+key 1 6
+run 20000000
+screen
+settings

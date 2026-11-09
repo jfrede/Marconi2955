@@ -1,0 +1,55 @@
+# Transmitter test as used in practice: select the mode and the modulation type,
+# optionally enter the expected frequency. In normal use the instrument finds the
+# transmitter by itself; that search needs the RF counter, which is not modelled.
+adc 2 10
+run 60000000
+screen
+# Tx
+key 0 0
+run 30000000
+screen
+settings
+# Transmitter on: 145.5 MHz at the RF counter
+rf 145500000
+run 200000000
+screen
+# FM
+key 6 5
+run 20000000
+screen
+settings
+# AM
+key 7 5
+run 20000000
+screen
+settings
+# FM again
+key 6 5
+run 20000000
+# FREQ, expected frequency 145.5 MHz
+key 0 2
+run 12000000
+key 0 3
+run 12000000
+key 3 3
+run 12000000
+key 4 3
+run 12000000
+key 4 4
+run 12000000
+key 4 3
+run 12000000
+key 0 5
+run 30000000
+screen
+settings
+# Top key beside the screen: AUTO TUNE, back to automatic tuning
+key 0 0
+run 30000000
+screen
+settings
+# Rx
+key 6 0
+run 30000000
+screen
+settings
