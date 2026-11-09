@@ -43,7 +43,9 @@ The socket loss is 0 dB on BNC and 20 dB on N, which has a 20 dB pad. An externa
 (`level_socket_loss`), so the shown level is always the level at the connected equipment.
 
 The tens of dB choose the attenuator step. The remainder is an index into the level table,
-which gives the DAC value. EEPROM values correct the table for each instrument.
+which gives the DAC value. EEPROM values correct the table for each instrument. The table was
+measured with a spectrum analyser by stepping the DAC at one attenuator setting. The curve has
+the same shape from 30 to 800 MHz within 0.4 dB.
 
 Voltage entries are converted:
 

@@ -51,6 +51,7 @@ These can change a displayed value in the last digit.
 | Self test | Uses the DUPLEX measuring cycle instead of a separate routine. Same frequencies, levels and limits as the manual. |
 | Self test screen | Shows the measured value and the deviation next to the result. The column layout differs for that. |
 | Calibration data menu | Own access keys. Shows the address and data in hex as well. Starts at `F000`. |
+| RF level table | Measured on one instrument instead of taken from the original firmware. It differs from the original by less than 1 dB. |
 | External attenuator | New. Set per socket on a third parameter page. Changes the RF level, its limits and the power reading. |
 | Overload warning | One extra line under the large letters says which input is the likely cause. The letters and the tone are our own design. |
 
@@ -67,8 +68,3 @@ These can change a displayed value in the last digit.
 | RF directional power head | Forward and reflected power, VSWR, PEP. Rare accessory, left out for now. |
 | Psophometric filter accessory | The original selects it automatically. Rare accessory, left out for now. |
 | Hardware target | RP2350 planned, with level shifting between 5 V and 3.3 V |
-
-## Before publishing
-
-The RF level table is extracted from the original ROM at build time and must not be published.
-It should be replaced with a table built from measurements.

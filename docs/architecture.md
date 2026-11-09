@@ -100,12 +100,12 @@ to the 8085 socket. `fw/target8085` only measures code size.
 
 ```
 cd emu && make        # the emulator
-cd fw  && make ROM=path/to/rom.bin   # builds build/test_fw, see below
+cd fw  && make        # builds build/test_fw, see below
 ```
 
-The firmware needs one table from the original ROM, the RF level table.
-`tools/gen_level_table.py` extracts it at build time into `fw/generated/`, which is not
-published. This table should be replaced by measured values before release.
+The firmware does not need the original ROM. Its RF level table, `fw/level_table.h`, was measured
+on an instrument with `tools/level_table_from_sweep.py` from the data in `tools/level_sweep_300MHz.csv`.
+You only need your own copy of the ROM to compare against the original in the emulator.
 
 `build/test_fw` has several modes. The most useful for comparing is:
 

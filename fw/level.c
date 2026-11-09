@@ -1,6 +1,6 @@
 #include "level.h"
 
-#include "generated/level_table.h"
+#include "level_table.h"
 #include "hal.h"
 #include "params.h"
 #include "regs.h"
