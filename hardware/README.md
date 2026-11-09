@@ -6,7 +6,13 @@ Add-on boards for the Marconi 2955, as KiCad projects with Gerber files.
 |---|---|
 | `step-attenuator/` | Solid-state replacement for the coarse step attenuator |
 | `om345-replacement/` | Replacement for the OM345 hybrid amplifier, using a MAR-7SM+ |
+| `om345-testrig/` | Test fixture for measuring an OM345 or a replacement board |
 | `10mhz-to-1mhz/` | Converts a 10 MHz reference signal to 1 MHz |
+
+## Licence
+
+The board designs in this folder are open hardware under the CERN Open Hardware Licence
+Version 2, Strongly Reciprocal (CERN-OHL-S-2.0). See [LICENSE](LICENSE).
 
 ## Note on the MAR-7SM+ footprint
 
