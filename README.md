@@ -8,7 +8,7 @@ user-defined power-on default, plain-text self-test error messages).
 - `docs/`   – hardware and behaviour specification (own text, publishable)
 - `emu/`    – 8085 emulator and instrument peripherals (C)
 - `fw/`     – new firmware (C, platform-neutral with a hardware abstraction layer)
-- `tools/`  – helper scripts (OCR, stitching split schematics, ...)
+- `tools/`  – helper scripts for building and comparing
 - `private/` – original ROMs, manuals, Ghidra project, disassembly. **Not in the repository.**
 
 ## Documentation
