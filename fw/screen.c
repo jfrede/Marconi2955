@@ -18,8 +18,22 @@ static uint8_t to_screen_code(char c)
     }
 }
 
+static uint8_t output_off;
+
+void screen_set_output(uint8_t on)
+{
+    output_off = !on;
+}
+
+uint8_t screen_output(void)
+{
+    return !output_off;
+}
+
 void screen_put(uint8_t col, uint8_t row, uint8_t code)
 {
+    if (output_off)
+        return;
     hal_screen_wait();
     hal_write(REG_SCREEN_ROW, row);
     hal_write(REG_SCREEN_COL, col);

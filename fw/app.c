@@ -1910,6 +1910,38 @@ void app_selftest_end(void)
     }
 }
 
+void app_format_increment(uint8_t reading, char *out)
+{
+    *out = 0;
+    switch (reading) {
+    case READING_RF_FREQ_INC:
+        if (app.rf_freq_inc >= RF_INC_MHZ_FROM)
+            put_text(put_fixed(out, (uint32_t)app.rf_freq_inc, 5), "MHz");
+        else if (app.rf_freq_inc)
+            put_text(put_fixed(out, (uint32_t)app.rf_freq_inc, 2), "kHz");
+        break;
+    case READING_RF_LEVEL_INC:
+        if (app.rf_level_inc)
+            put_text(put_fixed(out, (uint32_t)app.rf_level_inc, 1), "dB");
+        break;
+    case READING_AF_FREQ_INC:
+        tx_format_af_freq_inc(out);
+        break;
+    case READING_AF_LEVEL_INC:
+        tx_format_af_level_inc(out);
+        break;
+    case READING_MOD_FREQ_INC:
+        put_text(out, app.mod_freq_inc_text);
+        break;
+    case READING_MOD_LEVEL_INC:
+        if (app.mod_level_inc)
+            format_mod_inc(out);
+        break;
+    default:
+        break;
+    }
+}
+
 overload_input app_overload_input(void)
 {
     if (app.duplex)
@@ -2340,6 +2372,7 @@ static void knob_mod(int8_t direction)
 
 void app_knob(int8_t direction)
 {
+    gpib_note_knob(direction);
     if (regmenu_active()) {
         regmenu_knob(direction);
         return;

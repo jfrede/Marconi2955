@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+/* Counts the VARIABLE control for the RV command. */
+void gpib_note_knob(int8_t direction);
 void gpib_init(void);
 
 /* Call it regularly from the main loop. */

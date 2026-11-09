@@ -1,11 +1,14 @@
 #include "gpib.h"
 
 #include "app.h"
+#include "bargraph.h"
+#include "meter.h"
 #include "hal.h"
 #include "keys.h"
 #include "params.h"
 #include "readings.h"
 #include "regs.h"
+#include "tones.h"
 #include "screen.h"
 #include "settings.h"
 #include "tx.h"
@@ -45,6 +48,22 @@
 #define SWITCH_TALK_ONLY 0x20u
 #define SWITCH_UPPER_CASE_FROM 0x30u
 #define EOS_LF 0x0Au
+#define EOS_ETX 0x03u
+#define BEEP_TOGGLES 255u
+#define BEEP_HALF_PERIOD_US 185u
+#define BEEP_ROUTE_BITS 0x30u
+#define BEEP_FILTER_BASE 0x04u
+#define BEEP_SWITCH_BIT 0x08u
+#define BX_LENGTH_MASK 0x1Fu
+#define BX_CONTINUE 0x20u
+#define BX_CLEAR 0x40u
+#define BX_RETURN 0x80u
+#define BX_CONTINUE_POSITION 5u
+#define BX_RETURN_POSITION 6u
+#define BX_CONTINUE_MIN 8u
+#define BX_RETURN_MIN 6u
+#define BOX_POSITIONS 8u
+#define ROW_PER_BOX 4u
 
 #define INPUT_SIZE 128u
 #define OUTPUT_SIZE 512u
@@ -96,6 +115,8 @@ static struct {
     uint8_t present;
     uint8_t upper_case;
     uint8_t data_out_ready;
+    uint8_t end_byte;  /* EOS_LF, or EOS_ETX after the EX command */
+    int16_t knob_count;
     uint8_t remote, addressed;
     uint8_t input[INPUT_SIZE];
     uint8_t input_len;
@@ -191,11 +212,29 @@ static void put_char(char c)
     gpib.output_head = next;
 }
 
+static void put_string(const char *text);
+static void put_number(uint16_t value);
+static void put_line_end(void);
+
+/* The steps of the VARIABLE control since the last reading. */
+static void put_knob_count(void)
+{
+    int16_t count = gpib.knob_count;
+
+    gpib.knob_count = 0;
+    if (count < 0)
+        put_char('-');
+    put_number((uint16_t)(count < 0 ? -count : count));
+    put_line_end();
+}
+
 static void put_string(const char *text)
 {
     while (*text)
         put_char(*text++);
 }
+
+#define READING_TEXT_SIZE 24u
 
 static void put_line_end(void)
 {
@@ -204,9 +243,63 @@ static void put_line_end(void)
 
 static void put_reading(uint8_t index)
 {
-    const char *text = readings_get(index);
+    char computed[READING_TEXT_SIZE] = "";
+    const char *text;
 
+    if (index >= READING_RECEIVED_TONE_FIRST && index <= READING_RECEIVED_TONE_LAST) {
+        tones_received_text((uint8_t)(index - READING_RECEIVED_TONE_FIRST), computed);
+        text = computed;
+    } else if (index == READING_TONE_STANDARD) {
+        text = tones_standard_name();
+    } else if (index >= READING_RF_FREQ_INC && index <= READING_MOD_LEVEL_INC) {
+        app_format_increment(index, computed);
+        text = computed;
+    } else {
+        text = readings_get(index);
+    }
     put_string(*text ? text : "NULL");
+}
+
+static void set_end_byte(uint8_t end_byte)
+{
+    gpib.end_byte = end_byte;
+    hal_write(REG_EOS, end_byte);
+}
+
+static void beep(void)
+{
+    uint8_t range = meter_range_register();
+    uint8_t filter = (uint8_t)(meter_filter_register() | BEEP_FILTER_BASE);
+
+    hal_write(REG_RANGE_E3E, (uint8_t)(range | BEEP_ROUTE_BITS));
+    for (uint8_t i = 0; i < BEEP_TOGGLES; i++) {
+        filter ^= BEEP_SWITCH_BIT;
+        hal_write(REG_AF_FILTER, filter);
+        hal_delay_us(BEEP_HALF_PERIOD_US);
+    }
+    hal_write(REG_RANGE_E3E, range);
+    hal_write(REG_AF_FILTER, meter_filter_register());
+}
+
+static void draw_boxes(uint8_t pattern, uint8_t length)
+{
+    uint8_t width = length & BX_LENGTH_MASK;
+    uint8_t text_col = (uint8_t)(SCREEN_COLS - 2u - width);
+
+    if (length & BX_CLEAR)
+        screen_clear();
+    for (uint8_t i = 0; i < BOX_POSITIONS; i++)
+        if (pattern & (1u << i))
+            screen_softkey_box(i, width);
+    if ((length & BX_CONTINUE) && width >= BX_CONTINUE_MIN)
+        screen_print(text_col, BX_CONTINUE_POSITION * ROW_PER_BOX + 1u, "CONTINUE");
+    if ((length & BX_RETURN) && width >= BX_RETURN_MIN)
+        screen_print(text_col, BX_RETURN_POSITION * ROW_PER_BOX + 1u, "RETURN");
+}
+
+void gpib_note_knob(int8_t direction)
+{
+    gpib.knob_count = (int16_t)(gpib.knob_count + direction);
 }
 
 static void put_number(uint16_t value)
@@ -488,7 +581,7 @@ static void reading_command(void)
 /* Commands accepted without effect for now. */
 static uint8_t known_unimplemented(char first, char second)
 {
-    static const char names[] = "DSESBXBPTFTEETDTPRRREXLFBDBEDRURRVSSSA";
+    static const char names[] = "ETDTPRRRBEDRUR";
 
     for (const char *p = names; *p; p += 2) {
         if (p[0] == first && p[1] == second)
@@ -563,6 +656,8 @@ static void run_command(char first, char second)
         gpib.suppress_indicators = 1;
         break;
     case ('R' << 8) | 'S':
+        screen_set_output(1);
+        bargraph_set_hidden(0);
         gpib.suppress_indicators = 0;
         if (gpib.settings_received) {
             instrument_settings settings = {0};
@@ -620,6 +715,46 @@ static void run_command(char first, char second)
     case ('W' << 8) | 'R':
         write_screen();
         break;
+    case ('D' << 8) | 'S':
+        screen_set_output(0);
+        break;
+    case ('E' << 8) | 'S':
+        screen_set_output(1);
+        break;
+    case ('B' << 8) | 'D': {
+        uint16_t hide = 0;
+
+        (void)read_number(&hide);
+        bargraph_set_hidden(hide != 0);
+        break;
+    }
+    case ('B' << 8) | 'P':
+        beep();
+        break;
+    case ('B' << 8) | 'X': {
+        uint16_t pattern, length;
+
+        if (read_number(&pattern) && read_number(&length))
+            draw_boxes((uint8_t)pattern, (uint8_t)length);
+        else
+            report_error(ERROR_SYNTAX);
+        break;
+    }
+    case ('L' << 8) | 'F':
+        set_end_byte(EOS_LF);
+        break;
+    case ('E' << 8) | 'X':
+        set_end_byte(EOS_ETX);
+        break;
+    case ('T' << 8) | 'F':
+        tones_report_numbers(0);
+        break;
+    case ('T' << 8) | 'E':
+        tones_report_numbers(1);
+        break;
+    case ('R' << 8) | 'V':
+        put_knob_count();
+        break;
     default:
         if (first == 'X' && second >= 'A' && second <= 'G')
             press(soft_keys[second - 'A']);
@@ -654,6 +789,8 @@ static void run_line(void)
         }
         run_command(first, *line_pos++);
     }
+    if (gpib.output_added && gpib.end_byte == EOS_ETX)
+        put_char((char)EOS_ETX);
     if (gpib.output_added && gpib.output_head != gpib.output_tail)
         report_data_ready();
 }
@@ -787,6 +924,10 @@ void gpib_init(void)
     hal_write(REG_AUX, AUX_REGISTER_B_SETUP);
     hal_write(REG_AUX, AUX_EOS_MODE);
     hal_write(REG_AUX, AUX_REGISTER_E_SETUP);
+    gpib.end_byte = EOS_LF;
+    gpib.knob_count = 0;
+    screen_set_output(1);
+    bargraph_set_hidden(0);
     hal_write(REG_EOS, EOS_LF);
     hal_write(REG_AUX, AUX_CLEAR);
 }

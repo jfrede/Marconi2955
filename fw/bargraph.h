@@ -29,6 +29,9 @@ void bargraph_init(bargraph *bar, uint8_t bar_col, uint8_t tick_col, uint8_t sca
 void bargraph_update(bargraph *bar, double value, const char *unit);
 
 /* Empties the bar without changing its scale. */
+/* While hidden, bars are not updated; for a GPIB command. */
+void bargraph_set_hidden(uint8_t hidden);
+
 void bargraph_empty(bargraph *bar);
 
 /* The second bar of a pair: same scale as main, drawn on the other side of the ticks. */

@@ -151,8 +151,17 @@ void bargraph_init(bargraph *bar, uint8_t bar_col, uint8_t tick_col, uint8_t sca
     bar->top_row = draw_bar(bar_col, 0, bar->top_row, 0);
 }
 
+static uint8_t bars_hidden;
+
+void bargraph_set_hidden(uint8_t hidden)
+{
+    bars_hidden = hidden;
+}
+
 void bargraph_update(bargraph *bar, double value, const char *unit)
 {
+    if (bars_hidden)
+        return;
     uint8_t scale = select_scale(bar, value);
 
     bar->top_row = draw_bar(bar->bar_col, percent_of_scale(value, scale), bar->top_row, 0);
@@ -166,6 +175,8 @@ void bargraph_update(bargraph *bar, double value, const char *unit)
 
 void bargraph_empty(bargraph *bar)
 {
+    if (bars_hidden)
+        return;
     bar->top_row = draw_bar(bar->bar_col, 0, bar->top_row, 0);
 }
 
@@ -180,5 +191,7 @@ void bargraph_init_mirrored(bargraph *bar, uint8_t bar_col)
 
 void bargraph_update_mirrored(bargraph *bar, const bargraph *main_bar, double value)
 {
+    if (bars_hidden)
+        return;
     bar->top_row = draw_bar(bar->bar_col, percent_of_scale(value, main_bar->scale), bar->top_row, MIRRORED_OFFSET);
 }

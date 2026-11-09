@@ -64,6 +64,8 @@ These can change a displayed value in the last digit.
 | Item | Notes |
 |---|---|
 | Some GPIB commands | See [gpib.md](gpib.md) |
+| RF directional power head | Forward and reflected power, VSWR, PEP. Rare accessory, left out for now. |
+| Psophometric filter accessory | The original selects it automatically. Rare accessory, left out for now. |
 | Hardware target | RP2350 planned, with level shifting between 5 V and 3.3 V |
 
 ## Before publishing

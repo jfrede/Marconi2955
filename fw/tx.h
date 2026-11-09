@@ -21,6 +21,9 @@ void tx_audio_end(void);
 void tx_audio_draw(void);
 uint8_t tx_audio_key(uint8_t code);
 
+void tx_format_af_freq_inc(char *out);
+void tx_format_af_level_inc(char *out);
+
 uint8_t tx_two_tone(void);
 void tx_set_two_tone(uint8_t on);
 void tx_resume(void);

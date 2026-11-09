@@ -50,6 +50,9 @@ Number characters typed in a command act like the keypad.
 | `SV` | A command string that restores the current settings |
 | `PEm` | One memory byte. m is decimal, 57344 (`E000`) or higher. |
 | `PG` | Empty the output buffer |
+| `TF`, `TE` | Readings 14 to 25 give the received tones as frequencies, or as numbers and errors |
+| `LF`, `EX` | End of output: LF with EOI (default), or ETX with EOI |
+| `BP` | Beep |
 | `UC`, `LC` | Units in upper case only, or mixed |
 
 | n | Reading | n | Reading |
@@ -60,6 +63,10 @@ Number characters typed in a command act like the keypad.
 | 4 | Modulation level | 27, 28 | Generator frequency, level |
 | 5 | AF frequency | 29, 30 | AF generator frequency, level |
 | 6 | AF level | 31, 32 | Modulation frequency, level setting |
+| 14-25 | Received tones 1-12, as frequencies | 26 | Tone standard |
+| | | 33, 34 | RF frequency and level increment |
+| | | 35, 36 | AF generator frequency and level increment |
+| | | 37, 38 | Modulation frequency and level increment |
 
 ## Writing to memory
 
@@ -82,6 +89,8 @@ A `DU` to `EC00`-`EC3F` is kept in memory and applied by the next `RS`.
 | `WRc,r,text` | Write text at column c, row r |
 | `SP` | Stop updating the GPIB indicators |
 | `RS` | Restore the normal screen |
+| `DS`, `ES` | Stop or allow all writing on the screen, including `CS`, `WR` and `BX` |
+| `BXn,m` | Boxes beside the mode keys. n: bit 0 is the top key. m: length, plus 64 to clear the screen first, 32 for `CONTINUE`, 128 for `RETURN`. |
 
 ## Remote state
 
@@ -131,10 +140,20 @@ The operating manual does not list them.
 | 25 | Wrong unit for a level increment |
 | 26 | Modulation frequency entered with a level unit |
 
+## Commands beyond the manual
+
+These exist in the original firmware but the operating manual does not list them.
+
+| Command | Meaning |
+|---|---|
+| `RV` | Steps of the VARIABLE control since the last `RV`. Negative numbers have a sign; the original answers 65535 for -1. |
+| `BDn` | Non-zero: bar charts are no longer updated. `RS` undoes it. |
+
 ## Not done yet
 
-These commands are accepted but have no effect: `DS ES BX BP TF TE ET DT PR RR EX LF BD BE DR UR RV`
-and `SS SA`.
+`DR`, `BE` and `UR` are accepted but have no effect. They are also not in the manual. `DR` hides single
+fields of the DUPLEX screen. `BE` and `UR` let a controller draw its own bar charts and readings.
 
-`BD`, `BE`, `DR`, `UR` and `RV` exist in the original firmware but are not in the operating manual.
-`RR` selects the power head reading. The manual calls this `CR`.
+`ET DT PR RR` and readings 11 to 13 belong to the RF directional power head, which is not supported.
+
+A reading with no value answers `NULL`.

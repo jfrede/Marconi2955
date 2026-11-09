@@ -255,6 +255,11 @@ void meter_set_filter(af_filter filter)
     hal_write(REG_AF_FILTER, meter.e3b);
 }
 
+uint8_t meter_range_register(void)
+{
+    return meter.e3e;
+}
+
 uint8_t meter_filter_register(void)
 {
     return meter.e3b;

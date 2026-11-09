@@ -39,6 +39,7 @@ void meter_set_filter_extra(uint8_t mask, uint8_t value);
 
 /* The latest value written to the filter register. */
 uint8_t meter_filter_register(void);
+uint8_t meter_range_register(void);
 
 /* In dBV mode: toggles the reading relative to the present level. */
 void meter_toggle_db_relative(void);

@@ -6,6 +6,12 @@
 
 void tones_init(void);
 
+/* For the GPIB readings. */
+const char *tones_standard_name(void);
+/* The frequency of a received tone, as text; empty if there is none. */
+void tones_received_text(uint8_t index, char *out);
+void tones_report_numbers(uint8_t on);
+
 /* Opens the menu for the transmitter test (decoding, two tones) or the receiver test. */
 void tones_open(uint8_t transmit);
 void tones_open_two_tone(void);

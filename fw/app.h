@@ -37,6 +37,9 @@ void app_sat_toggle(void);
 void app_selftest_begin(void);
 void app_selftest_end(void);
 
+/* The text of an increment for its GPIB reading; empty if it is not set. */
+void app_format_increment(uint8_t reading, char *out);
+
 /* Marks an external attenuator on the given socket, or clears the mark if there is none. */
 void app_draw_external_attenuator(uint8_t col, uint8_t row, uint8_t bnc);
 

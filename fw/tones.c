@@ -131,6 +131,7 @@ static struct {
     uint16_t candidate_samples;
     uint32_t candidate_start, silent_since;
     uint8_t signal_present, candidate_valid;
+    uint8_t report_numbers; /* GPIB reads tone numbers and errors rather than frequencies */
 } t;
 
 /* ---- values ------------------------------------------------------------------------------ */
@@ -194,6 +195,11 @@ static uint16_t tone_duration_ms(uint8_t index)
 static const char *standard_name(void)
 {
     return t.standard == USER_STANDARD ? "USER DEFINED" : standards[t.standard].name;
+}
+
+const char *tones_standard_name(void)
+{
+    return standard_name();
 }
 
 static void format_frequency(char *out, uint32_t tenths)
@@ -364,6 +370,27 @@ static void start_candidate(double hz, uint32_t now)
     t.candidate_start = now;
 }
 
+/* The nearest tone number of the standard, and how far off it is in percent. */
+static int8_t match_tone(double hz, double *error_percent)
+{
+    double best_size = 1000.0;
+    int8_t best = -1;
+
+    *error_percent = 0.0;
+    for (uint8_t n = 0; n < TONE_NUMBERS; n++) {
+        double reference = standard_tenths(n) / 10.0;
+        double error = (hz - reference) / reference * 100.0;
+        double size = error < 0.0 ? -error : error;
+
+        if (size < best_size) {
+            best_size = size;
+            *error_percent = error;
+            best = (int8_t)n;
+        }
+    }
+    return best;
+}
+
 static void draw_status(const char *text)
 {
     print_field(32, 6, text, 7);
@@ -382,20 +409,9 @@ static void draw_received(void)
             screen_print(9, row, "NULL");
             continue;
         }
-        put_text(text, "");
-        double best_error = 100.0;
-        int8_t best = -1;
+        double best_error;
+        int8_t best = match_tone(r->hz, &best_error);
 
-        for (uint8_t n = 0; n < TONE_NUMBERS; n++) {
-            double reference = standard_tenths(n) / 10.0;
-            double error = (r->hz - reference) / reference * 100.0;
-            double size = error < 0.0 ? -error : error;
-
-            if (size < (best_error < 0.0 ? -best_error : best_error)) {
-                best_error = error;
-                best = (int8_t)n;
-            }
-        }
         format_frequency(text, round_scaled(r->hz, 10.0));
         screen_print(9, row, text);
         double size = best_error < 0.0 ? -best_error : best_error;
@@ -479,6 +495,35 @@ static void decoder_poll(void)
     }
     if (t.received_count >= RECEIVED_TONES_MAX)
         decode_finish(now);
+}
+
+void tones_received_text(uint8_t index, char *out)
+{
+    *out = 0;
+    if (index >= t.received_count || t.decode != DECODE_DONE)
+        return;
+    if (t.received[index].pause)
+        return;
+    if (!t.report_numbers) {
+        format_frequency(out, round_scaled(t.received[index].hz, 10.0));
+        return;
+    }
+    double error;
+    int8_t number = match_tone(t.received[index].hz, &error);
+    double size = error < 0.0 ? -error : error;
+
+    if (number >= 0 && size <= MATCH_LIMIT_PERCENT) {
+        char *p = put_fixed(out, (uint32_t)number, 0);
+
+        *p++ = ' ';
+        *p++ = error < 0.0 ? '-' : '+';
+        put_text(put_fixed(p, round_scaled(size, 10.0), 1), "%");
+    }
+}
+
+void tones_report_numbers(uint8_t on)
+{
+    t.report_numbers = on;
 }
 
 void tones_poll(void)

@@ -1139,6 +1139,18 @@ static void apply_af_freq(void)
     modulation_apply(&state);
 }
 
+void tx_format_af_freq_inc(char *out)
+{
+    put_text(out, tx.af_freq_inc_text);
+}
+
+void tx_format_af_level_inc(char *out)
+{
+    *out = 0;
+    if (tx.af_level_inc)
+        format_af_level(out, tx.af_level_inc);
+}
+
 uint8_t tx_two_tone(void)
 {
     return tx.two_tone;

@@ -11,6 +11,10 @@
 #define SCREEN_MILLI 39u /* character code of the small m */
 #define SCREEN_REVERSE_TOP 59u /* top edge of reverse-field text, in the row above it */
 
+/* While off, screen_put writes nothing; for the GPIB command that stops the display updating. */
+void screen_set_output(uint8_t on);
+uint8_t screen_output(void);
+
 void screen_clear(void);
 void screen_put(uint8_t col, uint8_t row, uint8_t code);
 
