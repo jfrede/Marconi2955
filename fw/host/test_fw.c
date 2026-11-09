@@ -24,7 +24,7 @@ static int failures;
 
 uint8_t hal_read(uint16_t addr) { return m.cpu.read(&m, addr); }
 static int log_synth;
-void hal_write(uint16_t addr, uint8_t value)
+void hal_poke(uint16_t addr, uint8_t value)
 {
     if (log_synth && (addr == REG_SYNTH_BAND || addr == REG_SYNTH_DATA))
         printf("%04X=%02X ", addr, value);

@@ -265,6 +265,18 @@ needs `ENTER DATA`, up to three digits, and `ENTER DATA` again.
 
 **Writing the wrong value can spoil the instrument's calibration. Make a backup of the EEPROM first.**
 
+## Hardware register menu
+
+The `REGISTERS` key in the calibration data menu opens a page for each control register, with the
+meaning of each bit. The VARIABLE control or the `LEVEL` arrows choose a field. `SELECT` steps it up,
+`DEL` steps it down. Digits followed by `dB` set a value. The `FREQ` arrows change the page, and the
+last page shows the inputs live.
+
+The control registers cannot be read back, so the page shows the last value written, or `--` if
+there was none. Measurements stop while the menu is open, so a value stays set. A label saying
+`MAYBE` or `UNKNOWN` means we are not sure about that bit. Fields marked `LOCK` are strobes, where
+a single change would only clock rubbish into the circuit.
+
 ## Audio test
 
 Pressing `AF GEN` in the receiver test turns the instrument into an audio test set. The AF generator
@@ -295,7 +307,7 @@ tones can be shifted by up to 9 %.
 **Receiving calling tones (TX).** The firmware reads single periods from the audio counter. A tone
 is a run of readings within 2.5 %. It must last at least 20 ms. 800 ms of silence, or 12 entries,
 ends the measurement. Each tone is matched to the nearest number in the standard if it is within
-5 %, and marked with `*` if the error is over 2 %.
+5 %, and marked with `X` if the error is over 2 %. (The character set has no asterisk.)
 
 **User-defined standard.** 15 frequencies and one duration, kept in the EEPROM. They replace a
 standard for both sending and receiving.

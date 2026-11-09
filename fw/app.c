@@ -21,6 +21,7 @@
 #include "screen.h"
 #include "selftest.h"
 #include "readings.h"
+#include "regmenu.h"
 #include "rfcounter.h"
 #include "synth.h"
 #include "tones.h"
@@ -373,6 +374,7 @@ void app_poll(void)
     tones_poll();
     if (help_active()) {
         selftest_poll();
+        regmenu_poll();
         return;
     }
     if (tones_active())
@@ -2338,6 +2340,10 @@ static void knob_mod(int8_t direction)
 
 void app_knob(int8_t direction)
 {
+    if (regmenu_active()) {
+        regmenu_knob(direction);
+        return;
+    }
     if (app.held || overload_active() || help_active() || tones_active() || !gpib_variable_enabled())
         return;
     app.settings_changed = 1;

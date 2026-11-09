@@ -404,7 +404,7 @@ static void draw_received(void)
             put_fixed(text, (uint32_t)best, 0);
             screen_print(3, row, text);
             if (size > ERROR_WARN_PERCENT)
-                screen_put(6, row, '*');
+                screen_put(6, row, 'X');
             char *p = text;
             *p++ = best_error < 0.0 ? '-' : '+';
             put_text(put_fixed(p, round_scaled(size, 10.0), 1), "%");

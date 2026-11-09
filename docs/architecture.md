@@ -45,6 +45,7 @@ screen and the registers.
 | `help.c` | The HELP menu and parameter pages |
 | `overload.c` | The `REMOVE RF INPUT` warning |
 | `service.c` | The calibration data menu |
+| `regmenu.c` | The hardware register menu |
 | `selftest.c` | The 13 self tests |
 | `tones.c` | The TONES menu, sub-audible tone, two tones, calling tones |
 | `settings.c` | The format of stored settings |
@@ -84,7 +85,7 @@ The firmware only reaches the hardware through `hal.h`:
 
 | Function | Purpose |
 |---|---|
-| `hal_read(addr)`, `hal_write(addr, value)` | Access a register or memory byte |
+| `hal_read(addr)`, `hal_poke(addr, value)` | Access a register or memory byte. `hal_write` in `hal_common.c` calls `hal_poke` and remembers what was written. |
 | `hal_screen_wait()` | Wait until the screen memory can be written |
 | `hal_delay_ms(ms)`, `hal_delay_us(us)` | Wait, for example after an EEPROM write or for the warning tone |
 | `hal_millis()` | Milliseconds since start, for timing calling tones |

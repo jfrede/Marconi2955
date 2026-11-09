@@ -10,7 +10,11 @@
 #define hal_write(addr, value) (*(volatile uint8_t *)(addr) = (value))
 #else
 uint8_t hal_read(uint16_t addr);
-void hal_write(uint16_t addr, uint8_t value);
+void hal_write(uint16_t addr, uint8_t value); /* in hal_common.c; every target provides hal_poke */
+void hal_poke(uint16_t addr, uint8_t value);
+
+/* The last value written to a register that cannot be read back; returns 0 if there was none. */
+uint8_t hal_last_written(uint16_t addr, uint8_t *value);
 #endif
 
 /* Waits until the screen memory may be written. */

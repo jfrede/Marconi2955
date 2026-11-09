@@ -10,7 +10,7 @@ uint8_t hal_read(uint16_t addr)
     return *(volatile uint8_t *)addr;
 }
 
-void hal_write(uint16_t addr, uint8_t value)
+void hal_poke(uint16_t addr, uint8_t value)
 {
     *(volatile uint8_t *)addr = value;
 }

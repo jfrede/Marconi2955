@@ -6,6 +6,7 @@
 #include "keys.h"
 #include "level.h"
 #include "params.h"
+#include "regmenu.h"
 #include "screen.h"
 
 #define KEY_ENTER_ADDRESS KEY_RX
@@ -20,6 +21,8 @@
 #define BOX_ADDRESS 1u
 #define BOX_DATA 2u
 #define BOX_RETURN 6u
+#define BOX_REGISTERS 3u
+#define KEY_REGISTERS KEY_TONES
 #define ROW_PER_KEY 4u
 #define MARK_COL 23u
 #define MARK_CHAR 0xDBu
@@ -136,6 +139,8 @@ static void draw_screen(void)
     screen_print(25, 5, "ENTER ADDRESS");
     screen_softkey_box(BOX_DATA, BOX_WIDTH);
     screen_print(25, 9, "ENTER DATA");
+    screen_softkey_box(BOX_REGISTERS, BOX_WIDTH);
+    screen_print(25, 13, "REGISTERS");
     screen_softkey_box(BOX_RETURN, BOX_WIDTH);
     screen_print(25, 25, "RETURN");
     screen_print(5, LABEL_ROW, "ADDRESS");
@@ -242,6 +247,10 @@ uint8_t service_active(void)
 
 void service_key(uint8_t code)
 {
+    if (regmenu_active()) {
+        regmenu_key(code);
+        return;
+    }
     if (sv.mode != MODE_BROWSE) {
         entry_key(code);
         return;
@@ -252,6 +261,9 @@ void service_key(uint8_t code)
         break;
     case KEY_ENTER_DATA:
         begin_entry(MODE_DATA);
+        break;
+    case KEY_REGISTERS:
+        regmenu_open();
         break;
     case KEY_UP_10:
         step_address(10);
@@ -277,6 +289,11 @@ void service_key(uint8_t code)
 void service_redraw(void)
 {
     uint16_t address = sv.address;
+
+    if (regmenu_active()) {
+        regmenu_redraw();
+        return;
+    }
 
     draw_screen();
     sv.address = address;
