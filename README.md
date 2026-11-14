@@ -19,7 +19,9 @@ each function works, the registers, the stored data, GPIB, and what is still mis
 ## Rules
 - Original ROMs, their disassembly and the manual PDFs stay private (see `.gitignore`).
 - Only own code and self-written specification are published.
-- Before any test on the instrument: back up EEPROM IC13 and the NOVRAMs (calibration data!).
+- Before any test on the instrument: back up EEPROM IC13. It holds the calibration data, which
+  cannot be recreated. The NOVRAMs hold only the current settings; GPIB `SV` reads them out if
+  you want to keep them.
 
 ## Licence
 
