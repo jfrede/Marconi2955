@@ -1,0 +1,97 @@
+; Bus cycles of an 8085 on the instrument's processor board.
+;
+; One read takes one word from the TX FIFO:
+;   bits 0-15 address, bit 16 = 1.
+; The data byte comes back in the RX FIFO.
+; One write takes two words:
+;   word 1: bits 0-15 address, bit 16 = 0
+;   word 2: bits 0-7 data, bits 8-15 the address high byte again
+;
+; OUT pins: GPIO 0-15 (AD0-7, A8-15). IN pins: GPIO 0-7.
+; Side-set pins: ALE, /RD, /WR, AD direction (1 = towards the instrument).
+; Y holds 0x0000FF00, the pin directions while reading (AD0-7 in, A8-15 out).
+; It is loaded once before the state machine starts.
+;
+; One PIO cycle is 100 ns (see bus_init). With the default loop counts:
+;   ALE high 200 ns, address hold after ALE 200 ns,
+;   /RD low 800 ns, /WR low 700 ns, data hold after /WR 200 ns,
+;   at least 1.7 us between cycles.
+; An 8085 with the 5 MHz crystal needs at least one 1.6 us opcode fetch between two
+; accesses to the bus, so the gap keeps chips like the Am9513 at their usual pace.
+
+.program bus8085
+.side_set 4
+
+.define IDLE    0b1110      ; drive the bus, /WR and /RD high, ALE low
+.define LATCH   0b1111      ; as IDLE with ALE high
+.define TURN    0b0110      ; AD towards the RP2350, /RD still high
+.define READ    0b0100      ; /RD low
+.define WRITE   0b1010      ; /WR low
+
+.define public RD_LOOPS 2   ; /RD low  = 2 * RD_LOOPS + 4 cycles
+.define public WR_LOOPS 2   ; /WR low  = 2 * WR_LOOPS + 3 cycles
+.define public GAP_LOOPS 7  ; gap      = 2 * GAP_LOOPS + 3 cycles (+ the next pull)
+
+.wrap_target
+    pull block              side IDLE
+    out pins, 16            side LATCH [1]  ; address out, ALE pulse
+    out x, 1                side IDLE  [1]  ; ALE falls, hold the address
+    jmp !x, do_write        side IDLE
+    mov pindirs, y          side TURN       ; release AD0-7, turn the translator round
+    set x, RD_LOOPS         side READ
+rd_wait:
+    jmp x--, rd_wait        side READ  [1]
+    in pins, 8              side READ       ; sample at the end of /RD
+    push block              side TURN  [1]  ; /RD high; let the chip release the bus
+    mov pindirs, ~null      side IDLE       ; drive AD0-7 again
+    jmp gap                 side IDLE
+do_write:
+    pull block              side IDLE
+    out pins, 16            side IDLE       ; data on AD0-7, address high byte unchanged
+    set x, WR_LOOPS         side WRITE
+wr_wait:
+    jmp x--, wr_wait        side WRITE [1]
+    nop                     side IDLE  [1]  ; data hold after /WR
+gap:
+    set x, GAP_LOOPS        side IDLE
+gap_wait:
+    jmp x--, gap_wait       side IDLE  [1]
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+/* One PIO cycle per 100 ns. */
+#define BUS8085_CYCLE_HZ 10000000u
+
+static inline void bus8085_program_init(PIO pio, uint sm, uint offset, uint pin_ad0, uint pin_ale)
+{
+    pio_sm_config c = bus8085_program_get_default_config(offset);
+
+    sm_config_set_out_pins(&c, pin_ad0, 16);
+    sm_config_set_in_pins(&c, pin_ad0);
+    sm_config_set_sideset_pins(&c, pin_ale);
+    sm_config_set_out_shift(&c, true, false, 32);   /* right, no autopull */
+    sm_config_set_in_shift(&c, false, false, 32);   /* left, so the byte lands in bits 0-7 */
+    sm_config_set_clkdiv(&c, (float)clock_get_hz(clk_sys) / (float)BUS8085_CYCLE_HZ);
+
+    /* Idle levels before the pins are handed over: address 0, ALE low, /RD /WR high, drive. */
+    pio_sm_set_pins_with_mask(pio, sm, (0xEu << pin_ale), (0xFFFFu << pin_ad0) | (0xFu << pin_ale));
+    pio_sm_set_pindirs_with_mask(pio, sm, (0xFFFFu << pin_ad0) | (0xFu << pin_ale),
+                                 (0xFFFFu << pin_ad0) | (0xFu << pin_ale));
+    for (uint i = 0; i < 16; i++)
+        pio_gpio_init(pio, pin_ad0 + i);
+    for (uint i = 0; i < 4; i++)
+        pio_gpio_init(pio, pin_ale + i);
+
+    pio_sm_init(pio, sm, offset, &c);
+
+    /* Y = pin directions while reading. Executed instructions need the side-set bits too. */
+    const uint side_idle = pio_encode_sideset(4, 0xE);
+    pio_sm_put(pio, sm, 0xFF00u << pin_ad0);
+    pio_sm_exec(pio, sm, pio_encode_pull(false, true) | side_idle);
+    pio_sm_exec(pio, sm, pio_encode_mov(pio_y, pio_osr) | side_idle);
+
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}

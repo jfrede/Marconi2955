@@ -93,8 +93,19 @@ The firmware only reaches the hardware through `hal.h`:
 To move to new hardware, write these functions for it. Register addresses stay the same
 because the firmware uses the instrument's own memory map.
 
-No target that runs on the real instrument exists yet. We expect to use an RP2350 connected
-to the 8085 socket. `fw/target8085` only measures code size.
+`fw/hal_screen.c` holds `hal_screen_wait` for the targets on the instrument's bus.
+
+| Target | Status |
+|---|---|
+| `fw/host/test_fw.c` | Runs the firmware against the emulator's hardware model |
+| `fw/target_rp2350/` | An RP2354B board in the 8085 socket ([specification](../hardware/cpu-adapter/SPEC.md)). Builds, not yet run on hardware |
+| `fw/target8085/` | Only measures code size |
+
+On the RP2350 a PIO state machine (`bus.pio`) makes the 8085's bus cycles. The main loop
+also watches the key-pressed line (RST 6.5) and calls `keys_read`, `app_key` and `keys_rearm`.
+An interrupt on RST 7.5 counts knob steps, with SID as the direction, and the main loop passes
+them to `app_knob`. While a new board is brought up, `hal_poke` refuses writes to the EEPROM and
+the NOVRAM (build option `HAL_PROTECT_EEPROM`, on by default).
 
 ## Building and testing
 
@@ -128,6 +139,17 @@ Screens and register values should match, apart from the differences in
 those over several samples.
 
 `emu/run_scenarios.sh` plays the stored key sequences in `emu/scenarios`.
+
+For the RP2350 you need the Pico SDK (2.3.0 or later), with `PICO_SDK_PATH` pointing to it:
+
+```
+cd fw/target_rp2350
+cmake -B build -DPICO_BOARD=marconi2955_cpu      # or pimoroni_pico_plus2_rp2350 for a bus test
+cmake --build build                              # build/marconi2955.uf2, build/bustest.uf2
+```
+
+`bustest` is a small monitor on the USB serial port: it reads, dumps and writes single bus
+addresses and repeats a pattern of bus cycles for a logic analyzer.
 
 ## Where to read next
 

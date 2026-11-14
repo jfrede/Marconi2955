@@ -1,8 +1,6 @@
-/* Hardware access for the original 8085 board: all registers are memory mapped. */
+/* Hardware access for the original 8085 board: all registers are memory mapped.
+ * hal_screen_wait is in ../hal_screen.c. */
 #include "../hal.h"
-
-#define REG_STATUS 0xEE00u
-#define STATUS_SCREEN_SYNC 0x80u
 
 #ifndef HAL_DIRECT_MEMORY_MAP
 uint8_t hal_read(uint16_t addr)
@@ -15,14 +13,6 @@ void hal_poke(uint16_t addr, uint8_t value)
     *(volatile uint8_t *)addr = value;
 }
 #endif
-
-void hal_screen_wait(void)
-{
-    while (!(hal_read(REG_STATUS) & STATUS_SCREEN_SYNC))
-        ;
-    while (hal_read(REG_STATUS) & STATUS_SCREEN_SYNC)
-        ;
-}
 
 uint32_t hal_millis(void)
 {

@@ -66,4 +66,9 @@
 /* Returns 0 when no key is held, otherwise row * 8 + column + 1 (1-64). */
 uint8_t keys_scan(void);
 
+/* For a target that sees the key-pressed signal (RST 6.5): when it goes high, call keys_read,
+ * pass a non-zero code to app_key, then call keys_rearm so the next key press is latched. */
+uint8_t keys_read(void);  /* waits until the matrix reads the same many times in a row */
+void keys_rearm(void);    /* clears the key-pressed latch */
+
 #endif
