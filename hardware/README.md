@@ -10,7 +10,25 @@ Add-on boards for the Marconi 2955, as KiCad projects with Gerber files.
 | `10mhz-to-1mhz/` | Converts a 10 MHz reference signal to 1 MHz |
 | `cpu-adapter/` | RP2354B board for the 8085 socket, runs the new firmware (v1.0, not built or tested yet; see its SPEC.md) |
 
-## CPU adapter
+## Pictures
+
+### Step attenuator
+
+![Step attenuator, 3D view from KiCad](step-attenuator/pictures/board_CAD.png)
+![Step attenuator board](step-attenuator/pictures/board_real.jpg)
+![Step attenuator fitted in the instrument](step-attenuator/pictures/assembled.jpg)
+
+### OM345 replacement
+
+![Original OM345 (left) and the replacement board with a MAR-7SM+ (right)](om345-replacement/pictures/original_vs_replacement.jpg)
+![Two replacement boards fitted in the instrument](om345-replacement/pictures/fitted.jpg)
+![Frequency response of the original OM345 and the replacement, 0-1 GHz](om345-replacement/pictures/response.png)
+
+### 10 MHz to 1 MHz converter
+
+![10 MHz to 1 MHz converter fitted in the instrument](10mhz-to-1mhz/pictures/fitted.jpg)
+
+### CPU adapter
 
 ![CPU adapter v1.0, 3D view from KiCad](cpu-adapter/pictures/board_CAD.png)
 
