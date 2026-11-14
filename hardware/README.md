@@ -10,6 +10,13 @@ Add-on boards for the Marconi 2955, as KiCad projects with Gerber files.
 | `10mhz-to-1mhz/` | Converts a 10 MHz reference signal to 1 MHz |
 | `cpu-adapter/` | RP2354B board for the 8085 socket, runs the new firmware (v1.0, not built or tested yet; see its SPEC.md) |
 
+## CPU adapter
+
+![CPU adapter v1.0, 3D view from KiCad](cpu-adapter/pictures/board_CAD.png)
+
+The RP2354B board that replaces the 8085 on AB4. Specification and status:
+[cpu-adapter/SPEC.md](cpu-adapter/SPEC.md).
+
 ## Licence
 
 The board designs in this folder are open hardware under the CERN Open Hardware Licence

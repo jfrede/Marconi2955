@@ -13,6 +13,8 @@ but not built or tested yet. Points still to be measured are listed at the end.
 
 ## Board v1.0 as built
 
+![Board v1.0, 3D view from KiCad](pictures/board_CAD.png)
+
 The KiCad project uses other reference designators than this specification and differs from it
 in a few points:
 
