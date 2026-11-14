@@ -8,3 +8,10 @@ CLAUDE.md
 *.rep
 build/
 __pycache__/
+.vscode/
+# KiCad: local settings, backups and lock files
+*.kicad_prl
+*-backups/
+_autosave-*
+~*.lck
+fp-info-cache
